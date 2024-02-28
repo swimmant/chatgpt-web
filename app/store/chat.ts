@@ -379,6 +379,7 @@ export const useChatStore = createPersistStore(
                   method: "POST",
                   mode: "cors",
                   body: JSON.stringify({
+                    stream: true,
                     sessionId: session.id,
                     message: session.messages,
                     ...modelConfig,
