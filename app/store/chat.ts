@@ -97,7 +97,7 @@ function getSummarizeModel(currentModel: string) {
 function countMessages(msgs: ChatMessage[]) {
   return msgs.reduce(
     (pre, cur) => pre + estimateTokenLength(getMessageTextContent(cur)),
-    0,
+    0
   );
 }
 
@@ -236,7 +236,7 @@ export const useChatStore = createPersistStore(
         const currentIndex = get().currentSessionIndex;
         let nextIndex = Math.min(
           currentIndex - Number(index < currentIndex),
-          sessions.length - 1,
+          sessions.length - 1
         );
 
         if (deletingLastSession) {
@@ -263,7 +263,7 @@ export const useChatStore = createPersistStore(
               set(() => restoreState);
             },
           },
-          5000,
+          5000
         );
       },
 
@@ -314,7 +314,7 @@ export const useChatStore = createPersistStore(
                   url: url,
                 },
               };
-            }),
+            })
           );
         }
         let userMessage: ChatMessage = createMessage({
@@ -332,22 +332,6 @@ export const useChatStore = createPersistStore(
         const recentMessages = get().getMessagesWithMemory();
         const sendMessages = recentMessages.concat(userMessage);
         const messageIndex = get().currentSession().messages.length + 1;
-
-        try {
-          fetch("https://gateway.goodparents.com.cn/user/me").then((result) => {
-            console.log(
-              "%c 🎗️🌹🌸🌷🌼🌺 [ result ]-337",
-              "font-size:13px; background:#10d312; color:#54ff56;",
-              result.json(),
-            );
-          });
-        } catch (error) {
-          console.log(
-            "%c 🎗️🌹🌸🌷🌼🌺 [ error ]-341",
-            "font-size:13px; background:#c4e191; color:#ffffd5;",
-            error,
-          );
-        }
 
         // save user's and bot's message
         get().updateCurrentSession((session) => {
@@ -389,27 +373,31 @@ export const useChatStore = createPersistStore(
             }
             ChatControllerPool.remove(session.id, botMessage.id);
             try {
-              fetch("https://gateway.goodparents.com.cn/gpt-msg-storage/chat/storage", {
-                method: "POST",
-                body: JSON.stringify({
-                  sessionId: session.id,
-                  message: session.messages,
-                  ...modelConfig,
-                }),
-              })
+              fetch(
+                "https://gateway.goodparents.com.cn/gpt-msg-storage/chat/storage",
+                {
+                  method: "POST",
+                  mode: "cors",
+                  body: JSON.stringify({
+                    sessionId: session.id,
+                    message: session.messages,
+                    ...modelConfig,
+                  }),
+                }
+              )
                 .then((result) => result.json())
                 .then((res) => {
                   console.log(
                     "%c 🎗️🌹🌸🌷🌼🌺 [ res ]-384",
                     "background:#545146; color:#98958a;",
-                    res,
+                    res
                   );
                 });
             } catch (error) {
               console.log(
                 "%c 🎗️🌹🌸🌷🌼🌺 [ error ]-387",
                 "background:#c0597d; color:#ff9dc1;",
-                error,
+                error
               );
             }
           },
@@ -429,7 +417,7 @@ export const useChatStore = createPersistStore(
             });
             ChatControllerPool.remove(
               session.id,
-              botMessage.id ?? messageIndex,
+              botMessage.id ?? messageIndex
             );
 
             console.error("[Chat] failed ", error);
@@ -439,7 +427,7 @@ export const useChatStore = createPersistStore(
             ChatControllerPool.addController(
               session.id,
               botMessage.id ?? messageIndex,
-              controller,
+              controller
             );
           },
         });
@@ -488,7 +476,7 @@ export const useChatStore = createPersistStore(
         if (shouldInjectSystemPrompts) {
           console.log(
             "[Global System Prompt] ",
-            systemPrompts.at(0)?.content ?? "empty",
+            systemPrompts.at(0)?.content ?? "empty"
           );
         }
 
@@ -506,7 +494,7 @@ export const useChatStore = createPersistStore(
         // short term memory
         const shortTermMemoryStartIndex = Math.max(
           0,
-          totalMessageCount - modelConfig.historyMessageCount,
+          totalMessageCount - modelConfig.historyMessageCount
         );
 
         // lets concat send messages, including 4 parts:
@@ -549,7 +537,7 @@ export const useChatStore = createPersistStore(
       updateMessage(
         sessionIndex: number,
         messageIndex: number,
-        updater: (message?: ChatMessage) => void,
+        updater: (message?: ChatMessage) => void
       ) {
         const sessions = get().sessions;
         const session = sessions.at(sessionIndex);
@@ -591,7 +579,7 @@ export const useChatStore = createPersistStore(
             createMessage({
               role: "user",
               content: Locale.Store.Prompt.Topic,
-            }),
+            })
           );
           api.llm.chat({
             messages: topicMessages,
@@ -602,14 +590,14 @@ export const useChatStore = createPersistStore(
               get().updateCurrentSession(
                 (session) =>
                   (session.topic =
-                    message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
+                    message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC)
               );
             },
           });
         }
         const summarizeIndex = Math.max(
           session.lastSummarizeIndex,
-          session.clearContextIndex ?? 0,
+          session.clearContextIndex ?? 0
         );
         let toBeSummarizedMsgs = messages
           .filter((msg) => !msg.isError)
@@ -620,7 +608,7 @@ export const useChatStore = createPersistStore(
         if (historyMsgLength > modelConfig?.max_tokens ?? 4000) {
           const n = toBeSummarizedMsgs.length;
           toBeSummarizedMsgs = toBeSummarizedMsgs.slice(
-            Math.max(0, n - modelConfig.historyMessageCount),
+            Math.max(0, n - modelConfig.historyMessageCount)
           );
         }
 
@@ -633,7 +621,7 @@ export const useChatStore = createPersistStore(
           "[Chat History] ",
           toBeSummarizedMsgs,
           historyMsgLength,
-          modelConfig.compressMessageLengthThreshold,
+          modelConfig.compressMessageLengthThreshold
         );
 
         if (
@@ -646,7 +634,7 @@ export const useChatStore = createPersistStore(
                 role: "system",
                 content: Locale.Store.Prompt.Summarize,
                 date: "",
-              }),
+              })
             ),
             config: {
               ...modelConfig,
@@ -698,7 +686,7 @@ export const useChatStore = createPersistStore(
     migrate(persistedState, version) {
       const state = persistedState as any;
       const newState = JSON.parse(
-        JSON.stringify(state),
+        JSON.stringify(state)
       ) as typeof DEFAULT_CHAT_STATE;
 
       if (version < 2) {
@@ -743,5 +731,5 @@ export const useChatStore = createPersistStore(
 
       return newState as any;
     },
-  },
+  }
 );
