@@ -388,6 +388,30 @@ export const useChatStore = createPersistStore(
               get().onNewMessage(botMessage);
             }
             ChatControllerPool.remove(session.id, botMessage.id);
+            try {
+              fetch("https://gateway.goodparents.com.cn/gpt-msg-storage/chat/storage", {
+                method: "POST",
+                body: JSON.stringify({
+                  sessionId: session.id,
+                  message: session.messages,
+                  ...modelConfig,
+                }),
+              })
+                .then((result) => result.json())
+                .then((res) => {
+                  console.log(
+                    "%c 🎗️🌹🌸🌷🌼🌺 [ res ]-384",
+                    "background:#545146; color:#98958a;",
+                    res,
+                  );
+                });
+            } catch (error) {
+              console.log(
+                "%c 🎗️🌹🌸🌷🌼🌺 [ error ]-387",
+                "background:#c0597d; color:#ff9dc1;",
+                error,
+              );
+            }
           },
           onError(error) {
             const isAborted = error.message.includes("aborted");
